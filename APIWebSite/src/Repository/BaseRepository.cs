@@ -13,7 +13,7 @@ namespace APIWebSite.src.Repository
 
         public async Task AddAsync(T entiry)
         {
-            _context.Set<T>().Add(entiry);
+            await _context.Set<T>().AddAsync(entiry);
             await _context.SaveChangesAsync();
         }
 
