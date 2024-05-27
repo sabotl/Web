@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using WebSiteClassLibrary.DTO;
-using WebSiteClassLibrary.Interfaces.Services;
 
 namespace APIWebSite.Controllers
 {
@@ -10,9 +8,9 @@ namespace APIWebSite.Controllers
     [Route("[controller]")]
     public class UserController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly WebSiteClassLibrary.Interfaces.Services.IUserService _userService;
         private readonly ILogger<UserController> _logger;
-        public UserController(ILogger<UserController> logger, IUserService _userService)
+        public UserController(ILogger<UserController> logger, WebSiteClassLibrary.Interfaces.Services.IUserService _userService)
         {
             _logger = logger;
             this._userService = _userService;
@@ -20,7 +18,7 @@ namespace APIWebSite.Controllers
 
 
         [HttpPost("Auth")]
-        public async Task<IActionResult> auth(UserDTO user)
+        public async Task<IActionResult> auth(WebSiteClassLibrary.DTO.UserDTO user)
         {
             try
             {
@@ -30,8 +28,7 @@ namespace APIWebSite.Controllers
                     access_token = token,
                     username = user.login,
                 };
-
-                return await Task.FromResult(Ok(response));
+                return Ok(response);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -96,12 +93,9 @@ namespace APIWebSite.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.Name)?.Value;
-                var userProfile = await _userService.GetUserByLoginAsync(userId);
-                return Json(userProfile);
+                return Json(await _userService.GetUserByLoginAsync(User.FindFirst(ClaimTypes.Name)?.Value));
             }catch(Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
             }
         }

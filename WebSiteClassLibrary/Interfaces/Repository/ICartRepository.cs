@@ -1,4 +1,5 @@
-﻿using WebSiteClassLibrary.Models;
+﻿using WebSiteClassLibrary.DTO;
+using WebSiteClassLibrary.Models;
 
 namespace WebSiteClassLibrary.Interfaces.Repository
 {
@@ -6,6 +7,6 @@ namespace WebSiteClassLibrary.Interfaces.Repository
     {
         Task<Cart?> GetCartByUserIdAsync(Guid userId);
         Task<IEnumerable<CartItem>?> GetItemsCartById(int id);
-        Task CreateCartAsync(Cart cart);
+        Task DeleteItemCartAsync(Cart cart, ProductToCartDTO dto);
     }
 }

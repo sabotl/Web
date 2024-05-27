@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WebSiteClassLibrary.DTO;
 using WebSiteClassLibrary.Models;
 
 namespace APIWebSite.src.Repository
@@ -19,13 +20,24 @@ namespace APIWebSite.src.Repository
                 .Where(c=> c.CartId == id)
                 .ToListAsync();
         }
-        public async Task CreateCartAsync(Cart cart)
+
+        public async Task DeleteItemCartAsync(Cart cart, ProductToCartDTO dto)
         {
-            using (var context = new Context.MyDbContext())
+            var cartItem = cart.cartItems.FirstOrDefault(item => item.ProductId == dto.IdProduct);
+            if (cartItem == null)
             {
-                await context.Cart.AddAsync(cart);
-                await context.SaveChangesAsync();
+                throw new ArgumentException("Product not found in cart");
             }
+            if(cartItem.Quantity > dto.AmountProduct)
+            {
+                cartItem.Quantity -= dto.AmountProduct;
+            }
+            else
+            {
+                cart.cartItems.Remove(cartItem);
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -2,8 +2,8 @@
 {
     public interface ICartService
     {
-        Task<IEnumerable<Models.CartItem>?> Get(string userid);
-        Task Add(string userLogin, WebSiteClassLibrary.DTO.ProductToCartDTO productToCartDTO);
-        Task Delete(WebSiteClassLibrary.DTO.ProductToCartDTO productToCartDTO);
+        Task<IEnumerable<Models.CartItem>?> GetAsync(string userid);
+        Task AddAsync(string userLogin, WebSiteClassLibrary.DTO.ProductToCartDTO productToCartDTO);
+        Task DeleteAsync(string user, WebSiteClassLibrary.DTO.ProductToCartDTO productToCartDTO);
     }
 }

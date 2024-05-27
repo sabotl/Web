@@ -1,6 +1,4 @@
 ﻿using APIWebSite.src.Repository;
-using WebSiteClassLibrary.DTO;
-using WebSiteClassLibrary.Interfaces.Services;
 using WebSiteClassLibrary.Models;
 
 namespace APIWebSite.src.Services
@@ -14,7 +12,7 @@ namespace APIWebSite.src.Services
             _cartRepository = cartRepository;
             _userRepository = userRepository;
         }
-        public async Task Add(string userLogin, WebSiteClassLibrary.DTO.ProductToCartDTO productToCartDTO)
+        public async Task AddAsync(string userLogin, WebSiteClassLibrary.DTO.ProductToCartDTO productToCartDTO)
         {
             var user = await _userRepository.GetUserByLoginAsync(userLogin);
             if (user != null)
@@ -45,12 +43,20 @@ namespace APIWebSite.src.Services
                 throw new Exception("User not found");
         }
 
-        public Task Delete(WebSiteClassLibrary.DTO.ProductToCartDTO p)
+        public async Task DeleteAsync(string user, WebSiteClassLibrary.DTO.ProductToCartDTO dto)
         {
-            throw new NotImplementedException();
+            var account = await _userRepository.GetUserByLoginAsync(user);
+            if (account != null)
+            {
+                var cart = await _cartRepository.GetCartByUserIdAsync(account.id);
+                if (cart != null)
+                {
+                    await _cartRepository.DeleteItemCartAsync(cart, dto);
+                }
+            }
         }
 
-        public async Task<IEnumerable<CartItem>?> Get(string userid)
+        public async Task<IEnumerable<CartItem>?> GetAsync(string userid)
         {
             var user = await _userRepository.GetUserByLoginAsync(userid);
             if (user != null)
@@ -67,7 +73,7 @@ namespace APIWebSite.src.Services
                         user_id = user.id,
                         Created_at = DateTime.UtcNow
                     };
-                    await _cartRepository.CreateCartAsync(newCart);
+                    await ((BaseRepository<Cart>)_cartRepository).AddAsync(newCart);
                 }
             }
             return Enumerable.Empty<CartItem>();

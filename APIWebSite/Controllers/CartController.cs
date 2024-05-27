@@ -23,7 +23,7 @@ namespace APIWebSite.Controllers
                 if (userId == null)
                     return Json("User claims error");
 
-                return Json(await _cartService.Get(userId));
+                return Json(await _cartService.GetAsync(userId));
 
         }
         [HttpPost("add"), Authorize]
@@ -35,7 +35,7 @@ namespace APIWebSite.Controllers
                 if (userId == null)
                     return BadRequest("User claims error");
 
-                await _cartService.Add(userId, productToCartDTO);
+                await _cartService.AddAsync(userId, productToCartDTO);
                 return Ok();
             }
             catch (Exception ex)
@@ -44,14 +44,20 @@ namespace APIWebSite.Controllers
             }
         }
         [HttpDelete("remove"), Authorize]
-        public async Task<IActionResult> remove(Guid id)
+        public async Task<IActionResult> remove(WebSiteClassLibrary.DTO.ProductToCartDTO dto)
         {
             try
             {
+                var userlogin = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (userlogin == null)
+                    return BadRequest("User claims error");
+
+                await _cartService.DeleteAsync(userlogin, dto);
                 return Ok();
             }catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-        }    }
+        }    
+    }
 }
