@@ -1,11 +1,6 @@
-﻿using APIWebSite.src.Context;
-using Azure.Core;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using WebSiteClassLibrary.Models;
 
 namespace APIWebSite.Controllers
 {
@@ -29,7 +24,6 @@ namespace APIWebSite.Controllers
                 {
                     access_token = token.AccessToken,
                     refreshToken = token.RefreshToken,
-                    username = user.login
                 };
                 return Ok(response);
             }
@@ -110,17 +104,31 @@ namespace APIWebSite.Controllers
             }
         }
         [Authorize]
-        [HttpGet("profile")]
-        public async Task<IActionResult> UserProfile()
+[HttpGet("profile")]
+public async Task<IActionResult> UserProfile()
+{
+    try
+    {
+        var login = User.FindFirst(ClaimTypes.Name)?.Value;
+        if (login == null)
         {
-            try
-            {
-                return Json(await _userService.GetUserByLoginAsync(User.FindFirst(ClaimTypes.Name)?.Value));
-            }catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Unauthorized("User is not authorized.");
         }
+
+        var user = await _userService.GetUserByLoginAsync(login);
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        return Json(user);
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
+
 
     }
 }
