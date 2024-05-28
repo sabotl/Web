@@ -26,4 +26,7 @@ public class User
     public string Role { get; set; }
     [Required, NotNull]
     public bool IsAnonymous {  get; set; }
+
+
+    public RefreshToken token { get; set; }
 }

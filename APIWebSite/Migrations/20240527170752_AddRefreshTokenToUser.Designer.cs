@@ -3,6 +3,7 @@ using System;
 using APIWebSite.src.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace APIWebSite.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240527170752_AddRefreshTokenToUser")]
+    partial class AddRefreshTokenToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,23 +135,6 @@ namespace APIWebSite.Migrations
                     b.ToTable("products");
                 });
 
-            modelBuilder.Entity("WebSiteClassLibrary.Models.RefreshToken", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("RefreshToken");
-                });
-
             modelBuilder.Entity("WebSiteClassLibrary.Models.Shop", b =>
                 {
                     b.Property<int>("Id")
@@ -224,6 +210,10 @@ namespace APIWebSite.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
@@ -278,17 +268,6 @@ namespace APIWebSite.Migrations
                     b.Navigation("SubCategory");
                 });
 
-            modelBuilder.Entity("WebSiteClassLibrary.Models.RefreshToken", b =>
-                {
-                    b.HasOne("WebSiteClassLibrary.Models.User", "User")
-                        .WithOne("token")
-                        .HasForeignKey("WebSiteClassLibrary.Models.RefreshToken", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("WebSiteClassLibrary.Models.SubCategory", b =>
                 {
                     b.HasOne("WebSiteClassLibrary.Models.Category", "Category")
@@ -313,12 +292,6 @@ namespace APIWebSite.Migrations
             modelBuilder.Entity("WebSiteClassLibrary.Models.Shop", b =>
                 {
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("WebSiteClassLibrary.Models.User", b =>
-                {
-                    b.Navigation("token")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -1,8 +1,10 @@
 ﻿using APIWebSite.src.Context;
 using APIWebSite.src.Repository;
+using Azure.Core;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using WebSiteClassLibrary.DTO;
 using WebSiteClassLibrary.Interfaces.Repository;
 using WebSiteClassLibrary.Interfaces.Services;
 using WebSiteClassLibrary.Models;
@@ -12,8 +14,10 @@ namespace APIWebSite.src.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly ITokenRepository _tokenRepository;
+        public UserService(IUserRepository userRepository, ITokenRepository tokenRepository)
         {
+            _tokenRepository = tokenRepository;
             _userRepository = userRepository;
         }
 
@@ -52,33 +56,16 @@ namespace APIWebSite.src.Services
             };
             await ((BaseRepository<User>)_userRepository).AddAsync(newuser);
         }
-        public async Task<string> AuthorizeAsync(WebSiteClassLibrary.DTO.UserDTO user)
+        public async Task<(string AccessToken, string RefreshToken)> AuthorizeAsync(WebSiteClassLibrary.DTO.UserDTO user)
         {
-            var existingUser = await _userRepository.GetUserByLoginAsync(user.login);
-            if (existingUser == null)
-            {
-                throw new UnauthorizedAccessException("User not found.");
-            }
-            if (existingUser.password != user.password)
-            {
-                throw new UnauthorizedAccessException("Invalid password.");
-            }
-
-            var claims = new List<Claim> { 
-                new Claim(ClaimTypes.Name, existingUser.login),
-                new Claim(ClaimTypes.Role, existingUser.Role)
-            };
-
-            var jwt = new JwtSecurityToken(
-                issuer: AuthOptions.ISSUER,
-                audience: AuthOptions.AUDIENCE,
-                claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(10)),
-                signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256)
-                );
-            var encodedJWT = new JwtSecurityTokenHandler().WriteToken(jwt);
-            return await Task.FromResult(encodedJWT);
+            return (await _tokenRepository.AuthorizeAsync(user));
         }
+
+        public async Task<(string AccessToken, string RefreshToken)> refreshToken(TokenRequest tokenRequest)
+        {
+            return await _tokenRepository.RefreshAsync(tokenRequest.AccessToken, tokenRequest.RefreshToken);
+        }
+
         public async Task<IEnumerable<WebSiteClassLibrary.Models.User>?> GetAllUsersAsync()
         {
             return await ((BaseRepository<User>)_userRepository).GetAllAsync();

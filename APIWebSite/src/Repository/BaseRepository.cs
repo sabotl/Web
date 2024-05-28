@@ -27,6 +27,15 @@ namespace APIWebSite.src.Repository
             }
         }
 
+        public async Task DeleteAsync(T entry)
+        {
+            if (entry != null)
+            {
+                _context.Set<T>().Remove(entry);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             var entity = await _context.Set<T>().FindAsync(id);

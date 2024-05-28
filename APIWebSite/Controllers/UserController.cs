@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using APIWebSite.src.Context;
+using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using WebSiteClassLibrary.Models;
 
 namespace APIWebSite.Controllers
 {
@@ -9,13 +14,10 @@ namespace APIWebSite.Controllers
     public class UserController : Controller
     {
         private readonly WebSiteClassLibrary.Interfaces.Services.IUserService _userService;
-        private readonly ILogger<UserController> _logger;
-        public UserController(ILogger<UserController> logger, WebSiteClassLibrary.Interfaces.Services.IUserService _userService)
+        public UserController(WebSiteClassLibrary.Interfaces.Services.IUserService _userService)
         {
-            _logger = logger;
             this._userService = _userService;
         }
-
 
         [HttpPost("Auth")]
         public async Task<IActionResult> auth(WebSiteClassLibrary.DTO.UserDTO user)
@@ -25,8 +27,9 @@ namespace APIWebSite.Controllers
                 var token = await _userService.AuthorizeAsync(user);
                 var response = new
                 {
-                    access_token = token,
-                    username = user.login,
+                    access_token = token.AccessToken,
+                    refreshToken = token.RefreshToken,
+                    username = user.login
                 };
                 return Ok(response);
             }
@@ -39,6 +42,25 @@ namespace APIWebSite.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("refresh"), Authorize]
+        public async Task<IActionResult> refresh(WebSiteClassLibrary.DTO.TokenRequest request)
+        {
+            try
+            {
+                var newToken = await _userService.refreshToken(request);
+
+                return Ok(new
+                {
+                    AccessToken = newToken.AccessToken,
+                    RefreshToken = newToken.RefreshToken,
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpPost("Create")]
         public async Task<IActionResult> CreateAcc(WebSiteClassLibrary.DTO.UserDTO user)
@@ -99,5 +121,6 @@ namespace APIWebSite.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
     }
 }

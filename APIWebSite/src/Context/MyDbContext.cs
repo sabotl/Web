@@ -45,8 +45,17 @@ namespace APIWebSite.src.Context
 
             modelBuilder.Entity<CartItem>()
                 .HasOne(ci => ci.Product)
-                .WithMany() // Если Product имеет коллекцию CartItems
+                .WithMany()
                 .HasForeignKey(ci => ci.ProductId);
+
+
+            modelBuilder.Entity<RefreshToken>()
+            .HasKey(rt => rt.UserId);
+
+            modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithOne(u => u.token)
+            .HasForeignKey<RefreshToken>(rt => rt.UserId);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -57,6 +66,7 @@ namespace APIWebSite.src.Context
         public DbSet<WebSiteClassLibrary.Models.Shop> shops { get; set; }
         public DbSet<WebSiteClassLibrary.Models.Cart> Cart { get; set; }
         public DbSet<WebSiteClassLibrary.Models.CartItem> CartItems { get; set; }
+        public DbSet<WebSiteClassLibrary.Models.RefreshToken> RefreshToken { get; set; }
 
     }
 }
